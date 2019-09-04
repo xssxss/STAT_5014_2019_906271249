@@ -1,0 +1,51 @@
+---
+title: "HW1_906271249"
+author: "Shuangshuang Xu"
+date: "2019/9/3"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Problem 2
+# part A
+## three specific desired learning objectives
+
+* learn how to code in a concise way
+* learn more useful functions for data analysis
+* know more knowledge about data structure and algorithm
+
+# part B
+## three density functions
+\begin{center}
+$f(x)=\frac{1}{\sqrt{2\Pi} *\sigma} *e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ $x\in(-\infty,+\infty)$ \\
+$f(x)=\frac{1}{2}$  $x\in[0,2]$ \\
+$f(x)=\frac{e^{-\lambda}\lambda^{x}}{x!}$  $x\in{0,1,2,3...}$
+\end{center}
+
+
+# Problem 3
+1. Keep track of how a result was produced, whenever it may be of potential interest
+2. Avoid manual data manipulation steps
+3. Archive the exact versions of all external programs used
+4. Control version of all custom scripts
+5. Record all intermediate results in standardized formats
+6. Note underlying random seeds when analyses includes randomness
+7. Store raw data behind plots
+8. Generate hierarchical analysis output and allow layers of increasing detail to be inspected
+9. Connect textual statements to underlying results
+10. Provide public access to scripts, runs, and results
+
+
+# Problem 4
+```{r}
+library(help="datasets")
+data(cars)
+plot(cars)
+hist(cars$speed,xlab="speed",main="Histogram of speed")
+```
+
+
+
+
