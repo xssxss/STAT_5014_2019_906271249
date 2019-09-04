@@ -18,22 +18,28 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # part B
 ## three density functions
-\begin{center}
-$f(x)=\frac{1}{\sqrt{2\Pi} *\sigma} *e^{-\frac{(x-\mu)^2}{2\sigma^2}}$ $x\in(-\infty,+\infty)$ \\
-$f(x)=\frac{1}{2}$  $x\in[0,2]$ \\
-$f(x)=\frac{e^{-\lambda}\lambda^{x}}{x!}$  $x\in{0,1,2,3...}$
-\end{center}
+\begin{eqnarray}
+f(x) &=& \frac{1}{\sqrt{2\Pi} *\sigma} *e^{-\frac{(x-\mu)^2}{2\sigma^2}} x\in(-\infty,+\infty) \\
+ &=& \frac{1}{2}   x\in[0,2] \\
+ &=& \frac{e^{-\lambda}\lambda^{x}}{x!}  x\in{0,1,2,3...}
+\end{eqnarray}
 
 
 # Problem 3
 1. Keep track of how a result was produced, whenever it may be of potential interest
+
 2. Avoid manual data manipulation steps
+
+    Sometimes, we do not know there is a function or operation that can help code to be more automatic.
+  
 3. Archive the exact versions of all external programs used
 4. Control version of all custom scripts
 5. Record all intermediate results in standardized formats
 6. Note underlying random seeds when analyses includes randomness
 7. Store raw data behind plots
 8. Generate hierarchical analysis output and allow layers of increasing detail to be inspected
+
+    This one needs us to keep the logic behind the hierarchical analysis in the mind and do not mess up.
 9. Connect textual statements to underlying results
 10. Provide public access to scripts, runs, and results
 
