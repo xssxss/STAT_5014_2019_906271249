@@ -1,0 +1,142 @@
+---
+title: "hw2"
+author: "Shuangshuang Xu"
+date: "2019/9/8"
+output: pdf_document
+---
+
+# Problem 3
+The version control can help keep all my codes, and help compare the difference between two versions. It is indispensable if I need to work with classmates on a project.
+
+
+# Problem 4
+## sensory data
+```{r include = FALSE }
+#problem 4
+#import data
+library(knitr)
+library(stargazer)
+urla<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
+sensory_data<-read.table(urla,sep=" ",skip=1,fill=TRUE,header=TRUE)
+
+#get the row number of the row which contains NA
+nrow_na<-apply(is.na(sensory_data),1,sum)
+num_row<-c(1:nrow(sensory_data))[nrow_na==1]
+#move the data to the right place
+sensory_data[num_row,2:6]<-sensory_data[num_row,1:5]
+sensory_data[,1]<-rep(1:10,each=3)
+
+```
+```{r echo = FALSE}
+kable(summary(sensory_data[,-1]),caption="summary of sensory data.")
+```
+
+## gold medal
+```{r include = FALSE }
+#import data
+urlb<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
+temp<-read.table(urlb,sep=" ",fill=TRUE,header=TRUE)
+#get sample data
+colnames(temp)<-NA
+data<-rbind(temp[,1:2],temp[,3:4],temp[,5:6],temp[,7:8])
+len<-nrow(data)
+#build a new data frame
+gold_medal<-data.frame("year"=data[,1],"long dump"=data[,2])[-c(len,len-1),]
+
+```
+```{r echo = FALSE}
+kable(summary(gold_medal),caption="summary of gold medal data.")
+```
+
+##  body weight and brain weight
+```{r include = FALSE }
+#import data
+urlc<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat"
+temp1<-read.table(urlc,sep=" ",fill=TRUE,header=TRUE)
+colnames(temp1)<-NA
+data1<-rbind(temp1[,1:2],temp1[,3:4],temp1[,5:6])
+len<-nrow(data1)
+#build a new data frame
+weight<-data.frame("Body Wt"=data1[,1],"Brain wt"=data1[,2])[-len,]
+kable(summary(weight),caption="summary of weight data.")
+
+```
+
+```{r echo = FALSE}
+kable(summary(weight),caption="summary of weight data.")
+```
+
+## tomato
+```{r include = FALSE }
+library(rvest)
+urld<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat"
+temp2<-read_html(urld)
+table<-temp2 %>% html_nodes('body') %>% html_text()
+lines<-strsplit(table,"\n")[[1]]
+colname<-unlist(strsplit(lines[2]," "))[c(23,37,42)]
+data1<-unlist(strsplit(lines[3]," "))[c(12,15,18)]
+data2<-unlist(strsplit(lines[4]," "))[c(4,8,11)]
+rowname<-rbind(unlist(strsplit(lines[3]," "))[1],unlist(strsplit(lines[4]," "))[1])
+tomato<-data.frame()
+tomato[1:2,1]<-rowname
+tomato[1:2,2:4]<-rbind(data1,data2)
+colnames(tomato)<-c("variable",colname)
+```
+
+```{r echo = FALSE}
+kable(tomato,caption="table of tomato data.")
+```
+
+# Problem 5
+```{r include = FALSE }
+library(swirl)
+.datapath <- file.path(path.package('swirl'), 'Courses',
+                       'R_Programming_E', 'Looking_at_Data',
+                       'plant-data.txt')
+plants <- read.csv(.datapath, strip.white=TRUE, na.strings="")
+.cols2rm <- c('Accepted.Symbol', 'Synonym.Symbol')
+plants <- plants[, !(names(plants) %in% .cols2rm)]
+names(plants) <- c('Scientific_Name', 'Duration', 'Active_Growth_Period',
+                   'Foliage_Color', 'pH_Min', 'pH_Max',
+                   'Precip_Min', 'Precip_Max',
+                   'Shade_Tolerance', 'Temp_Min_F')
+
+plants_sub<-plants[!is.na(plants$Foliage_Color)&!is.na(plants$pH_Min)&!is.na(plants$pH_Max),c('Foliage_Color', 'pH_Min', 'pH_Max')]
+
+plants_sub$pH_range<-plants_sub$pH_Max-plants_sub$pH_Min
+result_linear<-lm(pH_range~Foliage_Color,plants_sub)
+color<-as.character(unique(plants_sub$Foliage_Color))
+for (i in 1:6){
+  plants_sub[,4+i]<-c(0)
+  plants_sub[plants_sub$Foliage_Color==color[i],4+i]<-c(1)
+}
+color<-c("green","yellow_green","dark_green","white_gray","gray_green","red")
+colnames(plants_sub)[5:10]<-color
+
+result_anova<-aov(pH_range~green+yellow_green+dark_green+white_gray+gray_green+red,plants_sub)
+
+```
+
+```{r mylatextable, results = "asis", echo=FALSE}
+stargazer(result_linear,header=F,title="table of linear regression result")
+stargazer(result_anova$coefficients,header=FALSE,title="table of anova result")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
