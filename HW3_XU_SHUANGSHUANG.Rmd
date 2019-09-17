@@ -1,0 +1,113 @@
+---
+title: "HW3"
+author: "Shuangshuang Xu"
+date: "2019/9/17"
+output: pdf_document
+---
+```{r include=FALSE}
+library(data.table)
+library(dplyr)
+library(tidyverse)
+library(knitr)
+```
+
+# Problem 4
+## (a)
+
+```{r include=FALSE}
+#a
+#import data
+urla<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
+sensory_data<-fread(urla,sep=" ",fill=TRUE,skip=1)
+colnames(sensory_data)<-c("item","x1","x2","x3","x4","x5")
+#get data frame contains NA
+temp<-sensory_data %>% filter(is.na(x5)==TRUE) %>% select(1:5) %>% cbind(rep(1:10,each=2))
+colnames(temp)<-c("x1","x2","x3","x4","x5","item")
+#get data frame without NA
+temp1<-sensory_data %>% filter(is.na(x5)==FALSE)
+#combine
+sensory_data<-rbind(temp1,temp) 
+sensory_data<-sensory_data[order(sensory_data$item),]
+rownames(sensory_data)<-NULL
+```
+
+```{r echo=FALSE}
+kable(sensory_data,caption="table of sensory data")
+```
+
+## (b)
+
+```{r include=FALSE}
+#b
+#import data
+urlb<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
+temp<-fread(urlb,sep=" ",fill=TRUE,skip=1)
+#combine
+colnames(temp)<-rep(c("Year","Long_Jump"),4)
+data<-rbind(temp[,1:2],temp[,3:4],temp[,5:6],temp[,7:8])
+#remove NA
+gold_medal<-data %>% filter(is.na(Year)==FALSE | is.na(Long_Jump)==FALSE)
+
+```
+
+```{r echo=FALSE}
+kable(gold_medal,caption="table of gold medal")
+```
+
+## (c)
+```{r include=FALSE}
+#c
+#import data
+urlc<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat"
+temp<-fread(urlc,sep=" ",fill=TRUE,skip=1)
+#combine
+colnames(temp)<-rep(c("body_wt","brain_wt"),3)
+data<-rbind(temp[,1:2],temp[,3:4],temp[,5:6])
+#remove NA
+weight<-data %>% filter(is.na(body_wt)==FALSE | is.na(brain_wt)==FALSE)
+
+```
+
+```{r echo=FALSE}
+kable(weight, caption="table of body weight and brain weight")
+```
+
+## (d)
+```{r include=FALSE}
+#d
+#import data
+urld<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat"
+temp<-as.data.frame(fread(urld,sep=" ",fill=TRUE,skip=1,header=TRUE))
+#split 
+c<-c()
+for(i in 1:2){
+  for(j in 2:4){
+    c<-c(c,unlist(strsplit(temp[i,j],",")))
+  }
+}
+c<-as.numeric(c)
+m<-t(matrix(c,nrow=9))
+#data frame
+tomato<-data.frame(m)
+rownames(tomato)<-temp[,1]
+colnames(tomato)<-rep(c("10000","20000","30000"),each=3)
+
+```
+
+```{r echo=FALSE}
+kable(tomato, caption="table of tomato data")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
