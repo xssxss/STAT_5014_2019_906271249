@@ -14,7 +14,7 @@ library(knitr)
 # Problem 4
 ## (a)
 
-```{r include=FALSE}
+```{r}
 #a
 #import data
 urla<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
@@ -31,13 +31,13 @@ sensory_data<-sensory_data[order(sensory_data$item),]
 rownames(sensory_data)<-NULL
 ```
 
-```{r echo=FALSE}
+```{r}
 kable(sensory_data,caption="table of sensory data")
 ```
 
 ## (b)
 
-```{r include=FALSE}
+```{r}
 #b
 #import data
 urlb<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/LongJumpData.dat"
@@ -50,12 +50,12 @@ gold_medal<-data %>% filter(is.na(Year)==FALSE | is.na(Long_Jump)==FALSE)
 
 ```
 
-```{r echo=FALSE}
+```{r}
 kable(gold_medal,caption="table of gold medal")
 ```
 
 ## (c)
-```{r include=FALSE}
+```{r}
 #c
 #import data
 urlc<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/BrainandBodyWeight.dat"
@@ -68,12 +68,12 @@ weight<-data %>% filter(is.na(body_wt)==FALSE | is.na(brain_wt)==FALSE)
 
 ```
 
-```{r echo=FALSE}
+```{r}
 kable(weight, caption="table of body weight and brain weight")
 ```
 
 ## (d)
-```{r include=FALSE}
+```{r}
 #d
 #import data
 urld<-"https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/tomato.dat"
@@ -94,7 +94,7 @@ colnames(tomato)<-rep(c("10000","20000","30000"),each=3)
 
 ```
 
-```{r echo=FALSE}
+```{r}
 kable(tomato, caption="table of tomato data")
 ```
 
