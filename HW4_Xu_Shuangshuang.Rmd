@@ -1,0 +1,121 @@
+---
+title: "hw4"
+author: "Shuangshuang Xu"
+date: "2019/9/24"
+output: pdf_document
+---
+```{r include=FALSE}
+library(lintr)
+library(vioplot)
+library(knitr)
+```
+
+# Prob 4
+The code should not be too compact. Between lines or words , I should use more space and enter. And add more notes for understanding what is this part of code for. 
+
+# Prob 5
+```{r include=FALSE}
+lint(filename = "C:/Users/44653/Desktop/gitfile/HW3_XU_SHUANGSHUANG.Rmd")
+```
+
+I should take proper care of space between operators or symbols.
+
+# Prob 6
+```{r}
+data6 <- readRDS("C:/Users/44653/Desktop/gitfile/HW4_data.rds")
+
+func <- function(x){
+  #calculate mean, var and correlation
+  mean_dev1 <- mean(x$dev1)
+  mean_dev2 <- mean(x$dev2)
+  sd_dev1 <- sqrt(var(x$dev1))
+  sd_dev2 <- sqrt(var(x$dev2))
+  cor_12 <- cor(x$dev1, x$dev2)
+  dat <- data.frame(mean1=mean_dev1, mean2=mean_dev2,
+                    sd1=sd_dev1, sd2=sd_dev2, cor12=cor_12)
+  
+  #return in data frame format
+  return(dat)
+}
+
+dat6 <- data.frame(item=NULL, mean1=NULL, mean2=NULL, 
+                   sd1=NULL, sd2=NULL, cor12=NULL)
+
+#calculate each item's mean...
+for (i in 1:13){
+  dat_temp <- func(data6[data6$Observer==i, 2:3])
+  dat_temp$item <- i
+  dat6 <- rbind(dat6, dat_temp)
+}
+kable(dat6)
+
+#draw plot
+op <- par(mfrow = c(1, 2))
+boxplot(dat6$mean1, main = "dev1")
+boxplot(dat6$mean2, main = "dev2")
+
+vioplot(dat6$sd1, main = "dev1")
+vioplot(dat6$sd2, main = "dev2")
+
+```
+
+# Prob 7
+```{r}
+func7 <- function(x, a){
+  #each bin's area
+  area<-a*exp(-x^2/2)
+  
+  return(area)
+}
+
+dat7 <- data.frame(width=NULL, fx=NULL)
+n <- 1
+for(j in c(0.02, 0.01, 0.001, 1e-6)){
+  #with different width
+  f <- 0
+  for(i in seq(0, 1, j)[-1]){
+    #summation
+    f <- f+func7(i, j)
+  }
+  
+  dat7[n, 1] <- j
+  dat7[n, 2] <- f
+  n <- n+1
+}
+
+kable(dat7, col.names = c("width","f(x)"))
+```
+
+# Prob 8
+```{r}
+x_upper <- -2.8
+x_lower <- -3
+
+func1 <- function(x){
+  #f(x)
+  return(3^x-sin(x)+cos(5*x))
+}
+
+fx <- func1(mean(c(x_upper, x_lower)))
+y <- c()
+
+while(abs(fx) > 0.0001){
+  
+  x_temp <- mean(c(x_upper, x_lower))
+  fx <- func1(x_temp)
+  
+  if (fx > 0){
+    x_upper <- x_temp
+  } else {
+    x_lower <- x_temp
+  }
+  
+  y<-c(y, fx) #path
+}
+
+plot(y, type="l", xlab = "loops")
+```
+
+The interval I choose is [-3, -2.8], f(-2.8)>0 and f(-3)<0.
+
+The standard to terminate the loop is when absolute of f(x) is smaller than 0.0001. 
