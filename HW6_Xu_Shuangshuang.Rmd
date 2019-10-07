@@ -1,0 +1,162 @@
+---
+title: "HW6"
+author: "Shuangshuang Xu"
+date: "2019/10/4"
+output: pdf_document
+---
+
+# Prob 3
+
+```{r}
+#a
+proportionOfSuccess <- function(x) {
+  # x is a vector, calculate proportionn of success
+  p <- sum(x>0)/length(x)
+  return(p)
+}
+
+#b
+set.seed(12345)
+P4b_data <- matrix(rbinom(10, 1, prob = (30:40)/100), nrow = 10, ncol = 10, byrow = FALSE)
+
+#c
+#calculate by column
+apply(P4b_data, 2, proportionOfSuccess)
+
+#calculate by row
+apply(P4b_data, 1, proportionOfSuccess)
+```
+
+Each column of P4b_data is the same. That means when we create the matrix, we do not generate data of random variable with different probability. 
+
+```{r}
+#d
+set.seed(12345)
+
+prob <- matrix((30:40)/100, nrow = 11)
+rbinom10 <- function(x) {
+  #generate data from binomial with p = x
+  binRandom <- rbinom(10, 1, x)
+  return(binRandom)
+}
+
+P4b_data <- apply(prob, 1, rbinom10)
+print(P4b_data)
+
+#calculate by column
+print("marginalSuccess:")
+apply(P4b_data, 2, proportionOfSuccess)
+
+```
+
+# problem 4
+
+## (1)
+
+```{r}
+data <- readRDS("C:/Users/44653/Desktop/gitfile/HW4_data.rds")
+colnames(data) <- c("Observer", "x", "y")
+plotfunc <- function(z){
+  #create the plot of dataframe, z <- list(observer, data)
+  if (z[[1]] == 0){
+    plot(z[[2]]$x, z[[2]]$y, main = "plot of entire dataset", xlab = "x", ylab = "y")
+  } else {
+    plot(z[[2]]$x, z[[2]]$y, main = paste("plot for observer", z[[1]]), xlab = "x", ylab = "y")
+  }
+}
+```
+
+## (2)
+
+```{r}
+plotfunc(list(0,data))
+```
+
+```{r}
+observer <- unique(data$Observer)
+#list of each observer's data
+q <- sapply(observer, function(x) {list(x,data[data$Observer == x, ])}, simplify = FALSE)
+par(mfrow=c(1,2))
+lapply(q,  plotfunc)
+```
+
+# problem 5
+
+## (a)
+
+```{r echo=FALSE}
+library(downloader)
+download("http://www.farinspace.com/wp-content/uploads/us_cities_and_states.zip",dest="us_cities_states.zip")
+unzip("C:/Users/44653/Desktop/gitfile/us_cities_states.zip", exdir = "C:/Users/44653/Desktop/gitfile")
+    
+#read in data, looks like sql dump, blah
+library(data.table)
+states <- fread(input = "C:/Users/44653/Desktop/gitfile/us_cities_and_states/states.sql",skip = 23,sep = "'", sep2 = ",", header = F, select = c(2,4))
+
+cities <- fread(input = "C:/Users/44653/Desktop/gitfile/us_cities_and_states/cities_extended.sql",skip = 23,sep = "'", sep2 = ",", header = F, select = c(2,4))
+cities <- unique(cities)
+head(cities, 50)
+```
+
+## (b)
+
+```{r}
+library(knitr)
+countCity <- data.frame(table(cities$V4))
+colnames(countCity) <- c("state", "num of cities")
+kable(countCity)
+```
+
+## (c)
+
+```{r}
+letter_count <- data.frame(matrix(NA, nrow = 51, ncol = 26))
+
+getCount <- function(letter) {
+  #count the number of letter in the string
+  temp <- unlist(strsplit(state, ""))
+  count <- table(temp)[letter]
+  return(count)
+}
+
+# count each state's letter
+j <- 1
+for (i in tolower(states$V2)){
+  state <- i
+  letter_count[j, ] <- apply(matrix(letters, nrow = 1), 2, getCount)
+  j <- j+1
+}
+
+colnames(letter_count) <- letters
+rownames(letter_count) <- states$V2
+letter_count[is.na(letter_count)] <- 0
+kable(letter_count, caption = "count the number of letters in state name")
+```
+
+## (d)
+
+```{r}
+library(ggplot2)
+library(usmap)
+plot_usmap(data = countCity, values = "num of cities", color = "red", labels = TRUE, label_color = "black")+
+  scale_fill_continuous(low = "white", high = "red", name = "number of cities in every state")+
+  theme(legend.position = "right")
+
+```
+
+```{r}
+#count number of letter which appears more than three in state name
+largerThanThree <- data.frame(num=apply(letter_count>3, 1, sum))
+largerThanThree$state <- states$V4
+
+plot_usmap(data = largerThanThree, values = "num", color = "blue", labels = TRUE, label_color = "black")+
+  scale_fill_continuous(low = "white", high = "red", name = "state have > 3 occurances of ANY letter")+
+  theme(legend.position = "right")
+
+```
+
+
+
+
+
+
