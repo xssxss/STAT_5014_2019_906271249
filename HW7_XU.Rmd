@@ -1,0 +1,282 @@
+---
+title: "HW7"
+author: "shuangshuang xu"
+date: "10/25/2019"
+output: pdf_document
+---
+
+
+# problem2
+
+```{r include=FALSE}
+library(data.table)
+library(dplyr)
+library(tidyverse)
+library(knitr)
+library(parallel)
+```
+
+## (a)
+
+```{r}
+library(quantreg)
+library(quantmod)
+#fetch data from Yahoo
+#AAPL prices
+apple08 <- getSymbols('AAPL', auto.assign = FALSE, from = '2008-1-1', to =
+                        "2008-12-31")[,6]
+#market proxy
+rm08<-getSymbols('^ixic', auto.assign = FALSE, from = '2008-1-1', to =
+                   "2008-12-31")[,6]
+
+#log returns of AAPL and market
+logapple08<- na.omit(ROC(apple08)*100)
+logrm08<-na.omit(ROC(rm08)*100)
+
+#OLS for beta estimation
+beta_AAPL_08<-summary(lm(logapple08~logrm08))$coefficients[2,1]
+
+#create df from AAPL returns and market returns
+df08<-cbind(logapple08,logrm08)
+set.seed(666)
+Boot=1000
+sd.boot=rep(0,Boot)
+for(i in 1:Boot){
+  # nonparametric bootstrap
+  bootdata=df08[sample(nrow(df08), size = 251, replace = TRUE),]
+  sd.boot[i]= coef(summary(lm(AAPL.Adjusted~IXIC.Adjusted, data = bootdata)))[2,2]
+}
+head(sd.boot,10)
+```
+
+The names of y and x in linear model are wrong. I change them to the colname in bootdata, and it works. Here are first 10 values of coefficient. 
+
+## (b)
+
+```{r}
+#import data
+urla <- "https://www2.isye.gatech.edu/~jeffwu/wuhamadabook/data/Sensory.dat"
+sensory_data <- fread(urla,sep=" ",fill=TRUE,skip=1)
+colnames(sensory_data)<-c("item","x1","x2","x3","x4","x5")
+#get data frame contains NA
+temp<-sensory_data %>% filter(is.na(x5)==TRUE) %>% select(1:5) %>% cbind(rep(1:10,each=2))
+colnames(temp)<-c("x1","x2","x3","x4","x5","item")
+#get data frame without NA
+temp1<-sensory_data %>% filter(is.na(x5)==FALSE)
+#combine
+sensory_data<-rbind(temp1,temp)
+sensory_data<-sensory_data[order(sensory_data$item),]
+rownames(sensory_data)<-NULL
+```
+
+```{r}
+#bootstrap
+system.time({
+  set.seed(666)
+  Boot=100
+  beta.boot <- matrix(0, nrow = Boot, ncol = 6)
+  for(i in 1:Boot){
+    # nonparametric bootstrap
+    bootdata=sensory_data[sample(nrow(sensory_data), size = nrow(sensory_data), replace = TRUE),]
+    beta.boot[i,]= lm(item~., data = bootdata)$coefficients
+  }
+})
+```
+
+```{r}
+colnames(beta.boot) <- c("intercept", "beta1", "beta2", "beta3", "beta4", "beta5")
+kable(beta.boot[1:10, ], caption = "first 10 coefficients' value")
+```
+
+## part c
+
+```{r}
+cl <- makeCluster(8)
+system.time({
+
+  f <- function(x){
+
+    #beta coefficient from bootstrap data
+    bootdata=sensory_data[sample(nrow(sensory_data), size = nrow(sensory_data), replace = TRUE),]
+    beta.boot <- lm(item~., data = bootdata)$coefficients
+    return(beta.boot)
+  }
+
+  Boot <- matrix(1:100, ncol = 100)
+  clusterExport(cl=cl, varlist=c("Boot", "f", "sensory_data"), envir=environment())
+  beta_table <- t(parSapply(cl, Boot, f))
+
+})
+
+stopCluster(cl)
+
+```
+
+
+```{r}
+#kable(beta_table[1:10, ], caption = "first 10 coefficients' value")
+
+```
+
+
+Since each bootstrap do not relate with others, that's why we can calculate them in the same time. For b part, we used 0.143s, but in c part, we used 0.094s. Paralell processing helps save time. 
+
+# problem 3
+
+## part a
+
+```{r}
+func1 <- function(x){
+  #f(x)
+  return(3^x-sin(x)+cos(5*x))
+}
+
+x_upper <- -2
+x_lower <- -22
+x <- seq(from = x_lower, to = x_upper, by = 0.02)
+y <- apply(as.matrix(x, nrow = 1), 2, func1)
+
+#plot(x, y, type = "l")
+
+func2 <- function(z){
+  # find approximate x when f(x-e)*f(x+e)<0, e very small
+  if (y[z]*y[z+1] < 0){
+    return(mean(x[z],x[z+1]))
+  } else {
+    return(NA)
+  }
+}
+
+i <- as.matrix(seq(1:(length(x)-1)), nrow = 1)
+
+system.time({
+  result <- sapply(i, func2)
+})
+
+result[!is.na(result)]
+
+```
+
+## part b
+
+```{r}
+cl <- makeCluster(8)
+clusterExport(cl=cl, varlist=c("i", "func2", "y", "x"), envir=environment())
+
+system.time({
+  result2 <- parSapply(cl, i, func2)
+})
+stopCluster(cl)
+
+result2[!is.na(result2)]
+```
+
+part a uses only 0.001s, however part b uses 0.043s. I think, if using apply family only needs extremely short time, there is no need to use parapply family.
+
+The results are the same, since I used the same function and input. 
+
+# problem 4
+
+## part a
+
+It might not a good way to include the true value in the stopping rule. If the step size is a little bit large and with a not good start value, we may get a close enough answer, comparing with the true value. 
+
+## part b
+
+```{r eval=T, echo=T, include=T}
+    # set.seed(1256)
+    # theta <- as.matrix(c(1,2),nrow=2)
+    # X <- cbind(1,rep(1:10,10))
+    # h <- X%*%theta+rnorm(100,0,0.2)
+```
+
+```{r GD, eval=T, echo=T, include=T}
+
+# theta0_start <- seq(from = 0.47, to = 1.46, by = 0.01) # a series of starting value
+# theta1_start <- seq(from = 1.5, to = 2.49, by = 0.01)
+# thetaMatrix <-list()
+# z <- 1
+# for(i in 1:100){
+#     thetaMatrix[[z]] <- c(theta0_start[i], theta1_start[i])
+#     z <- z+1
+#   }
+# 
+#   #quick gradient descent
+#   #need to make guesses for both Theta0 and Theta1, might as well be close
+#   alpha <- 0.0000001 # this is the step size
+#   m <- 100 # this is the size of h
+#   tolerance <- 0.000000001 # stopping tolerance
+#   f <- function(t){
+#     #input starting value of theta0 and theta1, output the value after gradient descent
+#     theta0_s <- t[1]
+#     theta1_s <- t[2]
+#     theta0 <- c(theta0_s,rep(0,999)) # I want to try a guess at theta0_s(from the vector of theta0_start)
+#                                     # setting up container for max 1000 iters
+#     theta1 <- c(theta1_s,rep(0,999))
+#     i <- 2 #iterator, 1 is my guess (R style indecies)
+#     #current theta is last guess
+#     current_theta <- as.matrix(c(theta0[i-1],theta1[i-1]),nrow=2)
+#     #update guess using gradient
+#     theta0[i] <-theta0[i-1] - (alpha/m) * sum(X %*% current_theta - h)
+#     theta1[i] <-theta1[i-1] - (alpha/m) * sum((X %*% current_theta - h)*rowSums(X))
+#     rs_X <- rowSums(X) # can precalc to save some time
+#     z <- 0
+#     while(abs(theta0[i]-0.9695707)>tolerance && abs(theta1[i]-2.001563)>tolerance && z<5000000){
+#       if(i==1000){theta0[1]=theta0[i]; theta1[1]=theta1[i]; i=1; } ##cat("z=",z,"\n",sep="")}
+#       z <- z + 1
+#       i <- i + 1
+#       current_theta <- as.matrix(c(theta0[i-1],theta1[i-1]),nrow=2)
+#       theta0[i] <-theta0[i-1] - (alpha/m) * sum(X %*% current_theta - h)
+#       theta1[i] <-theta1[i-1] - (alpha/m) * sum((X %*% current_theta - h)*rs_X)
+#     }
+#     theta0 <- theta0[1:i]
+#     theta1 <- theta1[1:i]
+#     result <- c(theta0_s, theta1_s, z, theta0[i], theta1[i])
+#     return(result)
+#   }
+# 
+# cl <- makeCluster(8)
+# clusterExport(cl=cl, varlist=c("thetaMatrix", "alpha", "m", "tolerance", "f", "theta", "X", "h"), envir=environment())
+# 
+# result3 <- parSapply(cl, thetaMatrix, f)
+# 
+# stopCluster(cl)
+#write.csv(result3, file = "/home/xshuangshuang/result3.csv")
+
+```
+
+Since it really costs time, I save the result and reload it for the next analysis and do not need to run again when knitting.
+
+```{r}
+result3 <- read.csv("/home/xshuangshuang/result3.csv")
+result3 <- t(result3[, -1]) 
+colnames(result3) <- c("start_value_theta0", "start_value_theta1", "numOfIterations", "output_theta0", "output_theta1")
+kable(result3, caption = "table of starting value, stopping value and number of iteration")
+result3[result3[, 3] == min(result3[, 3]), ]
+```
+
+The least number of iteration is 4.655870e+05, the starting values (theta0 = 0.99, theta1 = 2.02) are not the closest one to the true value (0.9696, 2.002). So, the closer starting values do not mean the shorter time. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
