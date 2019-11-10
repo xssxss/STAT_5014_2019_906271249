@@ -1,0 +1,119 @@
+---
+title: "hw8"
+author: "Shuangshuang Xu"
+date: "2019/11/4"
+output: pdf_document
+---
+
+
+```{r include=FALSE}
+library(downloader)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(grid)
+library(gridExtra)
+```
+
+```{r}
+#unzip("C:/Users/44653/Desktop/gitfile/Edstats_csv.zip", exdir = "C:/Users/44653/Desktop/gitfile")
+data <- read.csv("C:/Users/44653/Desktop/gitfile/EdStatsData.csv", header = TRUE, skip = 1, stringsAsFactors = FALSE)
+TF <- !is.na(data)
+# delete colums are all NA
+data1 <- data[,apply(as.matrix(TF), 2, sum) != 0]
+# delete row with all NA except first four columns.
+data1 <- data1[apply(as.matrix(TF), 1, sum) != 4, ]
+```
+
+There are 886929 observations in the complete dataset. 
+
+In my cleaned dataset, there are 357405 observations.
+
+```{r}
+t1 <- summary(data1[data1$Arab.World=="Vietnam",-1:-4])
+kable(t1, caption = "summary for Vietnam")
+```
+
+```{r}
+t1 <- summary(data1[data1$Arab.World=="Vietnam",-1:-4])
+kable(t1, caption = "summary for Vietnam")
+```
+
+```{r}
+# use the data from Norway, plot "X" and "X.1", delete rows with NA
+data_plot <- data1[data1$Arab.World=="Norway", 5:6]
+data_plot <- data_plot[apply(is.na(data_plot), 1, sum) == 0, ]
+data_plot$X <- log(data_plot$X)
+data_plot$X.1 <- log(data_plot$X.1)
+#take log transformation, since data are too sparse
+
+# create plot with histgram
+par(fig=c(0,0.8,0,0.8))
+plot(data_plot$X, data_plot$X.1, xlab="X",
+  ylab="X.1")
+par(fig=c(0,0.8,0.55,1), new=TRUE)
+hist(data_plot$X, axes=FALSE, main = "marginal dist of X", xlab = NULL, ylab = NULL)
+par(fig=c(0.65,1,0,0.8),new=TRUE)
+hist(data_plot$X.1, axes=FALSE, main = "marginal dist of X.1", xlab = NULL, ylab = NULL)
+par(new=TRUE)
+```
+
+```{r}
+p1 <-ggplot(data_plot, aes(X, X.1))+geom_point()+ theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p2 <-qplot(X, data = data_plot) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+
+p3 <-qplot(X.1, data = data_plot) + coord_flip() + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+
+grid.arrange(
+  grobs = list(p2, p1, p3),
+  widths = c(1, 0.5),
+  layout_matrix = rbind(c(1, NA),
+                        c(2, 3))
+)
+
+```
+
+
+
+
+
+
+
+
+```{r}
+t2 <- summary(data1[data1$Arab.World=="Norway",-1:-4])
+kable(t2, caption = "summary for Norway")
+```
+
+```{r}
+# use the data from Norway, plot "X" and "X.1", delete rows with NA
+data_plot <- data1[data1$Arab.World=="Norway", 5:6]
+data_plot <- data_plot[apply(is.na(data_plot), 1, sum) == 0, ]
+data_plot$X <- log(data_plot$X)
+data_plot$X.1 <- log(data_plot$X.1)  
+#take log transformation, since data are too sparse
+
+# create plot with histgram
+par(fig=c(0,0.8,0,0.8))
+plot(data_plot$X, data_plot$X.1, xlab="X",
+  ylab="X.1")
+par(fig=c(0,0.8,0.55,1), new=TRUE)
+hist(data_plot$X, axes=FALSE, main = "marginal dist of X", xlab = NULL, ylab = NULL)
+par(fig=c(0.65,1,0,0.8),new=TRUE)
+hist(data_plot$X.1, axes=FALSE, main = "marginal dist of X.1", xlab = NULL, ylab = NULL)
+```
+
+```{r}
+p1 <-ggplot(data_plot, aes(X, X.1))+geom_point()+ theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())
+p2 <-qplot(X, data = data_plot) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+
+p3 <-qplot(X.1, data = data_plot) + coord_flip() + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.border = element_blank()) + theme(axis.title.x=element_blank(), axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.title.y=element_blank(), axis.text.y=element_blank(), axis.ticks.y=element_blank())
+
+grid.arrange(
+  grobs = list(p2, p1, p3),
+  widths = c(1, 0.5),
+  layout_matrix = rbind(c(1, NA),
+                        c(2, 3))
+)
+
+```
